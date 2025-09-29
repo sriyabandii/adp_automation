@@ -1,0 +1,46 @@
+name: ADP SecureTime Automation
+
+on:
+  schedule:
+    # Punch in at 8:30 AM IST (3:00 AM UTC)
+    - cron: '0 3 * * 1-5'
+    # Punch out at 9:30 PM IST (4:00 PM UTC)  
+    - cron: '0 16 * * 1-5'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  adp-punch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # increased to accommodate delay
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install puppeteer --silent
+
+    - name: Add random jitter (0–300 seconds)
+      run: |
+        JITTER=$((RANDOM % 301))
+        echo "⏱ Sleeping for $JITTER seconds to add time jitter"
+        sleep $JITTER
+
+    - name: Run ADP automation
+      env:
+        ADP_USERNAME: ${{ secrets.ADP_USERNAME }}
+        ADP_PASSWORD: ${{ secrets.ADP_PASSWORD }}
+        PUNCH_TYPE: ${{ github.event.schedule == '0 3 * * 1-5' && 'IN' || 'OUT' }}
+      run: node adp-automation.js
+
+    - name: Upload debug info (only on failure)
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: debug-${{ github.run_number }}
+        path: "*.png"
+        retention-days: 2
