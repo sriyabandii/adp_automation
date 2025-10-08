@@ -3,7 +3,7 @@ name: ADP SecureTime Automation
 on:
   schedule:
     # Punch in at 8:30 AM IST (3:00 AM UTC)
-    - cron: '0 3 * * 1-5'
+    - cron: '30 5 * * 1-5'
     # Punch out at 9:30 PM IST (4:00 PM UTC)  
     - cron: '0 16 * * 1-5'
   workflow_dispatch: # Manual trigger
