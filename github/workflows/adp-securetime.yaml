@@ -30,11 +30,23 @@ jobs:
         echo "⏱ Sleeping for $JITTER seconds to add time jitter"
         sleep $JITTER
 
+    - name: Determine punch type (IN or OUT)
+      id: punchtype
+      run: |
+        HOUR=$(date -u +"%H")
+        if [ "$HOUR" -eq 3 ]; then
+          echo "PUNCH_TYPE=IN" >> $GITHUB_ENV
+          echo "🕗 Detected punch type: IN"
+        else
+          echo "PUNCH_TYPE=OUT" >> $GITHUB_ENV
+          echo "🕘 Detected punch type: OUT"
+        fi
+
     - name: Run ADP automation
       env:
         ADP_USERNAME: ${{ secrets.ADP_USERNAME }}
         ADP_PASSWORD: ${{ secrets.ADP_PASSWORD }}
-        PUNCH_TYPE: ${{ github.event.schedule == '0 3 * * 1-5' && 'IN' || 'OUT' }}
+        PUNCH_TYPE: ${{ env.PUNCH_TYPE }}
       run: node adp-automation.js
 
     - name: Upload debug info (only on failure)
