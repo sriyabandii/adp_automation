@@ -34,7 +34,7 @@ jobs:
       env:
         ADP_USERNAME: ${{ secrets.ADP_USERNAME }}
         ADP_PASSWORD: ${{ secrets.ADP_PASSWORD }}
-        PUNCH_TYPE: ${{ github.event.schedule == '0 3 * * 1-5' && 'IN' || 'OUT' }}
+        PUNCH_TYPE: ${{ github.event.schedule && contains(github.event.schedule, '30 3') && 'IN' || 'OUT' }}
       run: node adp-automation.js
 
     - name: Upload debug info (only on failure)
